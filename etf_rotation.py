@@ -55,15 +55,9 @@ def get_raw_results(etf_list, offset):
     for etf in etf_list:
         #df = pandas.read_json("https://api.iextrading.com/1.0/stock/" + etf + "/chart/1y")
         df = all_data[etf]
-        #print(df)
-        #print(df.loc[0])
         length = len(df.index) - offset
-        #print("df.index = ", df.index)
-        #print("len(df.index) = ", len(df.index))
-        #print("offset = ", offset)
-        #print("length = ", length)
     
-        date = df.loc[length-1]['date']
+        date = pandas.to_datetime(df.loc[length-1]['date'])
         return_3m = (df.loc[length-1]['close']-df.loc[length-1-64]['close'])/df.loc[length-1-64]['close']
         return_20d = (df.loc[length-1]['close']-df.loc[length-1-19]['close'])/df.loc[length-1-19]['close']
     
@@ -76,12 +70,8 @@ def get_raw_results(etf_list, offset):
         volatility_20d = numpy.std( arr_1d ) * math.sqrt(252)
     
         raw_results.append([etf, return_3m, return_20d, volatility_20d, date])
-        #print(return_3m, return_20d, volatility_20d)
-    return raw_results    
 
-#print( raw_results )
-#return_3m_list = column(raw_results, 1)
-#print( return_3m_list )
+    return raw_results
 
 # rank each column
 def get_ranks( raw_results, etf_list ):
@@ -133,6 +123,8 @@ def get_historical_ranks( etf_list ):
     for x in range(len(etf_list)):
         #print(".",end="")
         hist_ranks.append([ etf_list[x] ])
+    
+    hist_ranks.append( ["Date"] )  # add a date row
 
     for x in range(251-64):  # one trading year minus 3 trading months
         #print(";",end="")
@@ -144,6 +136,11 @@ def get_historical_ranks( etf_list ):
             #print("y = ", y)
             hist_ranks[y].append(rank_list[y])
             
+        hist_ranks[y+1].append( raw_results[0][4])   # populate the date row
+        #print( raw_results[0][4])
+        #hist_ranks.append( column( raw_results[0], 4 ) )
+    #for y in range(len(raw_results)):
+        #print(raw_results[y])       
     return hist_ranks
     
     #for x in range(len(ranks)):
